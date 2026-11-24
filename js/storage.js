@@ -30,6 +30,23 @@ function saveLinks() {
   updateLoadButton();
 }
 
+// 링크 간격(초)은 기한 없이 계속 기억
+const DELAY_KEY = 'autoclick:delay';
+
+function saveDelay(v) {
+  try { localStorage.setItem(DELAY_KEY, String(v)); } catch (e) {}
+}
+
+function restoreDelay() {
+  let v = null;
+  try { v = parseFloat(localStorage.getItem(DELAY_KEY)); } catch (e) {}
+  const range = $('delayRange');
+  if (v && v >= parseFloat(range.min) && v <= parseFloat(range.max)) {
+    range.value = v;
+    updateDelay();
+  }
+}
+
 function formatRemaining(ms) {
   const h = Math.floor(ms / 3600000);
   const m = Math.floor((ms % 3600000) / 60000);

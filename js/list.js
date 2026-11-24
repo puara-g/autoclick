@@ -2,6 +2,7 @@
 function updateDelay() {
   const v = parseFloat($('delayRange').value);
   $('delayOut').textContent = v % 1 === 0 ? v + '초' : v.toFixed(1) + '초';
+  saveDelay(v);
 }
 
 function updateCount() {
