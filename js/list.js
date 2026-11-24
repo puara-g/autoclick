@@ -13,6 +13,7 @@ function addRow(url, title) {
   rows.push({ id, url: url || '', title: title || '' });
   renderRows();
   updateCount();
+  if (url) saveLinks();
   if (!url) {
     const inputs = document.querySelectorAll('.url-input');
     if (inputs.length) inputs[inputs.length - 1].focus();
@@ -23,6 +24,7 @@ function removeRow(id) {
   rows = rows.filter(r => r.id !== id);
   renderRows();
   updateCount();
+  saveLinks();
 }
 
 function updateCollapseUI() {
@@ -81,11 +83,13 @@ function renderRows() {
 function syncUrl(el) {
   const row = rows.find(r => r.id === parseFloat(el.dataset.id));
   if (row) row.url = el.value.trim();
+  saveLinks();
 }
 
 function syncTitle(el) {
   const row = rows.find(r => r.id === parseFloat(el.dataset.id));
   if (row) row.title = el.value;
+  saveLinks();
 }
 
 function setPill(id, type, label) {
