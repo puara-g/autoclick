@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoClick — 링크 자동 열기</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="light">
+
+<header>
+  <span class="logo">AutoClick</span>
+  <span class="logo-sub">링크 자동 열기 도구</span>
+  <div style="flex:1"></div>
+  <button class="btn-theme" onclick="toggleTheme()" id="themeBtn" title="테마 변경">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8.5A5.5 5.5 0 016.5 2a5.5 5.5 0 100 11A5.5 5.5 0 0013 8.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+    어둡게
+  </button>
+</header>
+
+<main>
+  <div class="hero">
+    <h1>여러 링크를<br><span>한번에 열기</span></h1>
+    <p>대공들 오늘도 화이팅 해보자♥</p>
+  </div>
+
+  <div class="controls-bar">
+    <div class="delay-control">
+      <label>링크 간격</label>
+      <input type="range" id="delayRange" min="0.3" max="15" value="3" step="0.1" oninput="updateDelay()">
+      <span class="delay-val" id="delayOut">3초</span>
+    </div>
+    <button class="btn-add" onclick="addRow()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      링크 추가
+    </button>
+  </div>
+
+  <div class="paste-zone" id="pasteZone">
+    <div class="paste-zone-label">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3 3V2a1 1 0 011-1h5a1 1 0 011 1v6a1 1 0 01-1 1H9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      여기에 링크 여러 개를 한꺼번에 붙여넣기
+    </div>
+    <textarea id="bulkInput" placeholder="https://google.com&#10;https://naver.com&#10;https://youtube.com&#10;...줄바꿈, 쉼표, 공백으로 구분해도 됩니다" rows="3" oninput="onBulkInput(this)" onpaste="onBulkPaste(event)"></textarea>
+    <div class="paste-apply">
+      <span class="paste-hint" id="pasteHint"></span>
+      <button class="btn-apply" id="applyBtn" style="display:none" onclick="applyBulk()">목록에 추가 ↓</button>
+    </div>
+  </div>
+
+  <div id="listHeader" style="display:none; align-items:center; justify-content:space-between; margin-bottom:8px; cursor:pointer;" onclick="toggleCollapse()">
+    <span id="listHeaderLabel" style="font-family:var(--mono); font-size:0.75rem; color:var(--text-muted);">링크 목록</span>
+    <span id="collapseIcon" style="font-family:var(--mono); font-size:0.72rem; color:var(--text-dim); display:flex; align-items:center; gap:4px;">
+      <svg id="collapseArrow" width="12" height="12" viewBox="0 0 12 12" fill="none" style="transition:transform 0.2s;"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="collapseIconText">접기</span>
+    </span>
+  </div>
+  <div id="linkList"></div>
+
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <p class="progress-label" id="progressLabel">0 / 0</p>
+  </div>
+
+  <div class="action-row">
+    <button class="btn-start" id="startBtn" onclick="startAll()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 2.5l9 5.5-9 5.5V2.5z" fill="currentColor"/></svg>
+      순서대로 전체 다 열기
+    </button>
+    <button class="btn-batch" id="batchBtn" onclick="openBatch()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span id="batchLabel">10개씩</span> 한번에 열기
+    </button>
+    <select id="batchSize" onchange="updateBatchLabel()">
+      <option value="5">5개</option>
+      <option value="10" selected>10개</option>
+      <option value="20">20개</option>
+      <option value="50">50개</option>
+    </select>
+    <button class="btn-clear" onclick="clearAll()">초기화</button>
+  </div>
+
+
+  <div id="statusMsg"></div>
+
+  <div class="tip-box">
+    <h3>TIP</h3>
+    <ul>
+      <li>링크 여러 개를 한꺼번에 복사해서 붙여넣으면 자동으로 나눠서 추가됩니다</li>
+      <li>처음 실행 시 브라우저 주소창 옆에 팝업 차단 아이콘이 뜨면 <strong style="color:var(--accent);font-weight:500">허용</strong>을 눌러주세요 — 이후엔 자동으로 열립니다</li>
+      <li>링크 간격을 넉넉히 설정하면 각 페이지가 로드될 시간이 생깁니다</li>
+      <li>링크는 드래그로 순서를 바꿀 수 없어요 — 삭제 후 다시 추가하세요</li>
+    </ul>
+  </div>
+</main>
+
+<footer>
+  <p>autoclick — 링크 자동 열기 도구</p>
+  <p id="countInfo">링크 0개</p>
+</footer>
+
+<script src="js/state.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/list.js"></script>
+<script src="js/opener.js"></script>
+<script src="js/bulk.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
